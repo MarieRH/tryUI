@@ -1,0 +1,9 @@
+{
+  "hosting": [
+    {
+      "site": "thirdtry-887bb",
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    }
+  ]
+}
