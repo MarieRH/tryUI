@@ -6,7 +6,6 @@ const cors = require('cors')({ origin: true });
 
 admin.initializeApp();
 
-// Helper function لقراءة emails
 function getEmailStats(email, password, filterType) {
   return new Promise((resolve, reject) => {
     const imap = new Imap({
@@ -25,15 +24,12 @@ function getEmailStats(email, password, filterType) {
     };
 
     imap.once('ready', () => {
-      // Check INBOX
       imap.openBox('INBOX', true, (err, box) => {
         if (err) return reject(err);
         stats.inbox.total = box.messages.total;
 
-        // Get breakdown
-        const fetch = imap.seq.fetch('1:*', {
-          bodies: 'HEADER.FIELDS (FROM SUBJECT)',
-          struct: true
+        const fetch = imap.seq.fetch('1:100', {
+          bodies: 'HEADER.FIELDS (FROM SUBJECT)'
         });
 
         let breakdown = {};
@@ -56,18 +52,11 @@ function getEmailStats(email, password, filterType) {
             .sort((a, b) => b.count - a.count)
             .slice(0, 10);
 
-          // Check Spam
           imap.openBox('Spam', true, (err, spamBox) => {
-            if (!err) {
-              stats.spam.total = spamBox.messages.total;
-            }
+            if (!err) stats.spam.total = spamBox.messages.total;
 
-            // Check Sent
             imap.openBox('Sent', true, (err, sentBox) => {
-              if (!err) {
-                stats.sent = sentBox.messages.total;
-              }
-
+              if (!err) stats.sent = sentBox.messages.total;
               imap.end();
               resolve(stats);
             });
@@ -81,9 +70,9 @@ function getEmailStats(email, password, filterType) {
   });
 }
 
-// Cloud Function
 exports.checkEmail = functions
-  .region('europe-west1') // قريب ل Morocco
+  .region('europe-west1')
+  .runWith({ timeoutSeconds: 300, memory: '512MB' })
   .https.onRequest((req, res) => {
     cors(req, res, async () => {
       if (req.method !== 'POST') {
@@ -102,7 +91,7 @@ exports.checkEmail = functions
       } catch (error) {
         console.error('IMAP Error:', error);
         res.status(500).json({ 
-          error: 'Failed to connect to email server',
+          error: 'Failed to connect',
           details: error.message 
         });
       }
