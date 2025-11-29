@@ -1,6 +1,7 @@
 {
-  "name": "email-monitor-functions",
+  "name": "functions",
   "version": "1.0.0",
+  "main": "index.js",
   "dependencies": {
     "firebase-functions": "^4.5.0",
     "firebase-admin": "^11.11.0",
