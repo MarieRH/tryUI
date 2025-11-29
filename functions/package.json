@@ -1,0 +1,14 @@
+{
+  "name": "email-monitor-functions",
+  "version": "1.0.0",
+  "dependencies": {
+    "firebase-functions": "^4.5.0",
+    "firebase-admin": "^11.11.0",
+    "imap": "^0.8.19",
+    "mailparser": "^3.6.5",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": "18"
+  }
+}
