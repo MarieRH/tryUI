@@ -1,7 +1,7 @@
 {
   "hosting": {
    {
-      "site": "thirdtry-887bb",
+      "site": "tryui-105ff",
       "public": "public",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
     }
