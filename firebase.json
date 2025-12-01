@@ -17,6 +17,15 @@
         "**/.*",
         "**/node_modules/**"
       ]
+    },
+    {
+      "site": "sdkgjhsdkg",
+      "public": "sdkgjhsdkg",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
     }
   ]
 }
