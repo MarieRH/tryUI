@@ -26,6 +26,15 @@
         "**/.*",
         "**/node_modules/**"
       ]
+    },
+    {
+      "site": "kdsjghjveriugh",
+      "public": "kdsjghjveriugh",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
     }
   ]
 }
