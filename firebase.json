@@ -1,6 +1,15 @@
 {
   "hosting": [
     {
+      "site": "edsrgseh",
+      "public": "edsrgseh",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
+    },
+    {
       "site": "tryui-105ff",
       "public": "public",
       "ignore": [
