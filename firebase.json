@@ -1,6 +1,15 @@
 {
   "hosting": [
     {
+      "site": "bgndfjdrjeg",
+      "public": "bgndfjdrjeg",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
+    },
+    {
       "site": "dsrgsdrjh",
       "public": "dsrgsdrjh",
       "ignore": [
