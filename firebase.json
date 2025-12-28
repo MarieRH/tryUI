@@ -1,5 +1,14 @@
 {
   "hosting": [
+    {
+      "site": "compaigntracker-29007",
+      "public": "compaign_tracker",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
+    },
      {
       "site": "nbrtipqzbgsd",
       "public": "nbrtipqzbgsd",
