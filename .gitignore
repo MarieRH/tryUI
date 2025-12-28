@@ -1,0 +1,16 @@
+node_modules/
+functions/node_modules/
+.firebase/
+.firebaserc
+.env
+.env.local
+*.log
+npm-debug.log*
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+dist/
+build/
+*.tmp
+.cache/
