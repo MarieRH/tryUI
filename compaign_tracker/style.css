@@ -10,20 +10,26 @@ body {
     min-height: 100vh;
 }
 
+/* CRITICAL FIX - Screen switching */
 .screen {
-    display: none;
+    display: none !important;
 }
 
 .screen.active {
-    display: block;
+    display: block !important;
 }
 
+/* Login Screen */
 #loginScreen {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+}
+
+#loginScreen.active {
+    display: flex !important;
 }
 
 .login-container {
@@ -107,6 +113,7 @@ body {
     color: #718096;
 }
 
+/* Dashboard */
 #dashboardScreen {
     min-height: 100vh;
     background: #f7fafc;
@@ -165,6 +172,7 @@ body {
     padding: 32px 24px;
 }
 
+/* Statistics */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -218,6 +226,7 @@ body {
     color: #805ad5;
 }
 
+/* Card */
 .card {
     background: white;
     border-radius: 12px;
@@ -232,6 +241,7 @@ body {
     margin-bottom: 20px;
 }
 
+/* Mailbox Form */
 .mailbox-form {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -239,7 +249,8 @@ body {
     margin-bottom: 16px;
 }
 
-.mailbox-form input {
+.mailbox-form input,
+.mailbox-form select {
     padding: 12px 16px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -308,6 +319,7 @@ body {
     to { transform: rotate(360deg); }
 }
 
+/* Filters */
 .filter-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -342,6 +354,7 @@ body {
     cursor: pointer;
 }
 
+/* Email List */
 .email-list {
     display: flex;
     flex-direction: column;
@@ -396,6 +409,7 @@ body {
     padding: 40px;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
     .filter-grid {
         grid-template-columns: 1fr;
