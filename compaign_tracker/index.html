@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mail Test App</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+</head>
+<body>
+
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button id="loginBtn">Login</button>
+
+<div id="dashboard" style="display:none;">
+  <h3>Welcome <span id="userEmail"></span></h3>
+  <form id="testForm">
+    From: <input type="text" name="from_name"><br>
+    Subject: <input type="text" name="subject"><br>
+    <button type="submit">Run Test</button>
+  </form>
+  <div id="result"></div>
+  <button id="logoutBtn">Logout</button>
+</div>
+
+<script>
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
+
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+loginBtn.onclick = () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  signInWithEmailAndPassword(auth, email, password)
+    .then(userCredential => {
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('userEmail').innerText = userCredential.user.email;
+    })
+    .catch(err => alert(err.message));
+}
+
+logoutBtn.onclick = () => {
+  signOut(auth).then(() => location.reload());
+}
+
+// Handle auth state
+onAuthStateChanged(auth, user => {
+  if(user){
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('userEmail').innerText = user.email;
+  }
+});
+
+// Handle test form
+document.getElementById('testForm').onsubmit = async function(e){
+  e.preventDefault();
+  const from = this.from_name.value;
+  const subject = this.subject.value;
+
+  // Call Firebase Function to fetch email stats
+  const res = await fetch('https://YOUR_FUNCTION_URL/runTest', {
+    method: 'POST',
+    body: JSON.stringify({from, subject}),
+    headers: {'Content-Type':'application/json'}
+  });
+  const data = await res.json();
+
+  // Save stats to Firestore
+  await addDoc(collection(db, 'campaign_tests'), {
+    userId: auth.currentUser.uid,
+    from_name: from,
+    subject: subject,
+    inbox_count: data.inbox,
+    spam_count: data.spam,
+    timestamp: new Date()
+  });
+
+  document.getElementById('result').innerHTML = `
+    Total matched: ${data.total}<br>
+    Inbox: ${data.inbox}<br>
+    Spam: ${data.spam}
+  `;
+}
+</script>
+</body>
+</html>
