@@ -178,22 +178,21 @@ function addMailbox() {
     
     // Save to Firestore if available
     if (db) {
-        db.collection('mailboxes').add(mailbox)
-            .then(() => {
-                mailboxes.push(mailbox);
-                renderMailboxes();
-                
-                document.getElementById('mailboxEmail').value = '';
-                document.getElementById('mailboxPassword').value = '';
-                
-                alert('Mailbox added successfully!');
-            })
-            .catch((error) => {
-                console.error('Error adding mailbox:', error);
-                alert('Error adding mailbox. In demo mode, mailbox added locally.');
-                mailboxes.push(mailbox);
-                renderMailboxes();
-            });
+        db.collection('mailboxes').add({
+    email,
+    password,
+    host,
+    port,
+    userId: currentUser.uid
+}).then((docRef) => {
+    mailboxes.push({
+        id: docRef.id,
+        email,
+        host,
+        port
+    });
+    renderMailboxes();
+});
     } else {
         // Demo mode - add locally
         mailboxes.push(mailbox);
@@ -229,7 +228,7 @@ function renderMailboxes() {
 }
 
 // Fetch Emails from Mailbox
-async function fetchEmails(mailboxId) {
+mailbox, event) {
     // ⛔ إذا demo user → ما تناديش Cloud Function
     if (!auth || !auth.currentUser) {
         console.log("Demo mode: skipping Cloud Function");
