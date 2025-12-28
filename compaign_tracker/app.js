@@ -230,51 +230,42 @@ function renderMailboxes() {
 
 // Fetch Emails from Mailbox
 async function fetchEmails(mailboxId) {
+    // ⛔ إذا demo user → ما تناديش Cloud Function
+    if (!auth || !auth.currentUser) {
+        console.log("Demo mode: skipping Cloud Function");
+
+        const newEmails = generateDemoEmails();
+        allEmails = [...allEmails, ...newEmails];
+        renderEmails();
+        updateStatistics();
+        alert('Demo: Emails fetched successfully!');
+        return;
+    }
+
     const button = event.target.closest('.btn-fetch');
     const svg = button.querySelector('svg');
-    
+
     button.disabled = true;
     svg.classList.add('rotate');
-    
+
     try {
-        if (functions) {
-            const fetchEmailsFunction = functions.httpsCallable('fetchEmails');
-            const result = await fetchEmailsFunction({ mailboxId: mailboxId });
-            
-            allEmails = result.data.emails;
-            renderEmails();
-            updateStatistics();
-            
-            alert('Emails fetched successfully!');
-        } else {
-            // Demo mode
-            setTimeout(() => {
-                const newEmails = generateDemoEmails();
-                allEmails = [...allEmails, ...newEmails];
-                renderEmails();
-                updateStatistics();
-                alert('Demo: Emails fetched successfully!');
-                button.disabled = false;
-                svg.classList.remove('rotate');
-            }, 2000);
-            return;
-        }
+        const fetchEmailsFunction = functions.httpsCallable('fetchEmails');
+        const result = await fetchEmailsFunction({ mailboxId });
+
+        allEmails = result.data.emails || [];
+        renderEmails();
+        updateStatistics();
+
+        alert('Emails fetched successfully!');
     } catch (error) {
-        console.error('Error fetching emails:', error);
-        
-        // Fallback to demo mode
-        setTimeout(() => {
-            const newEmails = generateDemoEmails();
-            allEmails = [...allEmails, ...newEmails];
-            renderEmails();
-            updateStatistics();
-            alert('Demo: Emails fetched successfully!');
-        }, 2000);
+        console.error('Error fetching emails:', error.message);
+        alert(error.message);
     } finally {
         button.disabled = false;
         svg.classList.remove('rotate');
     }
 }
+
 
 // Filter Emails
 function filterEmails() {
