@@ -9,60 +9,105 @@ const firebaseConfig = {
   measurementId: "G-9XQNXJW387"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const functions = firebase.functions();
-
 // Global variables
 let allEmails = [];
 let mailboxes = [];
 let currentUser = null;
+let auth, db, functions;
+
+// Initialize Firebase only if config is valid
+function initializeFirebase() {
+    try {
+        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            functions = firebase.functions();
+            console.log('Firebase initialized successfully');
+        } else {
+            console.log('Firebase not configured - Demo mode only');
+        }
+    } catch (error) {
+        console.log('Firebase initialization error - Demo mode only', error);
+    }
+}
+
+// Call initialization
+initializeFirebase();
 
 // Login Function
 function login() {
+    console.log('Login button clicked!'); // Debug
+    
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
+    console.log('Username:', username); // Debug
+    console.log('Password:', password ? '***' : 'empty'); // Debug
+    
+    if (!username || !password) {
+        alert('Please enter both username and password');
+        return;
+    }
+    
+    // Demo mode
     if (username === 'demo' && password === 'demo123') {
+        console.log('Demo login successful!');
         currentUser = { email: 'demo@example.com', uid: 'demo-user' };
         showDashboard();
         loadDemoData();
         return;
     }
     
-    auth.signInWithEmailAndPassword(username, password)
-        .then((userCredential) => {
-            currentUser = userCredential.user;
-            showDashboard();
-            loadUserData();
-        })
-        .catch((error) => {
-            alert('Login failed: ' + error.message);
-        });
+    // Firebase Authentication
+    if (auth) {
+        auth.signInWithEmailAndPassword(username, password)
+            .then((userCredential) => {
+                currentUser = userCredential.user;
+                showDashboard();
+                loadUserData();
+            })
+            .catch((error) => {
+                alert('Login failed: ' + error.message);
+            });
+    } else {
+        alert('Firebase not configured. Use demo mode: username: demo, password: demo123');
+    }
 }
 
+// Logout Function
 function logout() {
-    auth.signOut().then(() => {
+    if (auth) {
+        auth.signOut().then(() => {
+            currentUser = null;
+            allEmails = [];
+            mailboxes = [];
+            showLogin();
+        });
+    } else {
         currentUser = null;
         allEmails = [];
         mailboxes = [];
         showLogin();
-    });
+    }
 }
 
+// Show/Hide Screens
 function showLogin() {
     document.getElementById('loginScreen').classList.add('active');
     document.getElementById('dashboardScreen').classList.remove('active');
 }
 
 function showDashboard() {
+    console.log('Showing dashboard...');
     document.getElementById('loginScreen').classList.remove('active');
     document.getElementById('dashboardScreen').classList.add('active');
 }
 
+// Load Demo Data
 function loadDemoData() {
+    console.log('Loading demo data...');
+    
     mailboxes = [
         { 
             id: '1', 
@@ -76,8 +121,11 @@ function loadDemoData() {
     renderMailboxes();
     renderEmails();
     updateStatistics();
+    
+    console.log('Demo data loaded successfully!');
 }
 
+// Generate Demo Emails
 function generateDemoEmails() {
     const senders = ['Campaign A', 'Campaign B', 'Newsletter X', 'Promo Y', 'Marketing Team'];
     const subjects = [
@@ -107,6 +155,7 @@ function generateDemoEmails() {
     return emails;
 }
 
+// Add Mailbox
 function addMailbox() {
     const email = document.getElementById('mailboxEmail').value;
     const password = document.getElementById('mailboxPassword').value;
@@ -127,24 +176,33 @@ function addMailbox() {
         userId: currentUser.uid
     };
     
-    db.collection('mailboxes').add(mailbox)
-        .then(() => {
-            mailboxes.push(mailbox);
-            renderMailboxes();
-            
-            document.getElementById('mailboxEmail').value = '';
-            document.getElementById('mailboxPassword').value = '';
-            
-            alert('Mailbox added successfully!');
-        })
-        .catch((error) => {
-            console.error('Error adding mailbox:', error);
-            alert('Error adding mailbox. In demo mode, mailbox added locally.');
-            mailboxes.push(mailbox);
-            renderMailboxes();
-        });
+    // Save to Firestore if available
+    if (db) {
+        db.collection('mailboxes').add(mailbox)
+            .then(() => {
+                mailboxes.push(mailbox);
+                renderMailboxes();
+                
+                document.getElementById('mailboxEmail').value = '';
+                document.getElementById('mailboxPassword').value = '';
+                
+                alert('Mailbox added successfully!');
+            })
+            .catch((error) => {
+                console.error('Error adding mailbox:', error);
+                alert('Error adding mailbox. In demo mode, mailbox added locally.');
+                mailboxes.push(mailbox);
+                renderMailboxes();
+            });
+    } else {
+        // Demo mode - add locally
+        mailboxes.push(mailbox);
+        renderMailboxes();
+        alert('Mailbox added (demo mode)');
+    }
 }
 
+// Render Mailboxes
 function renderMailboxes() {
     const mailboxList = document.getElementById('mailboxList');
     
@@ -170,25 +228,41 @@ function renderMailboxes() {
     `).join('');
 }
 
+// Fetch Emails from Mailbox
 async function fetchEmails(mailboxId) {
-    const button = event.target;
+    const button = event.target.closest('.btn-fetch');
     const svg = button.querySelector('svg');
     
     button.disabled = true;
     svg.classList.add('rotate');
     
     try {
-        const fetchEmailsFunction = functions.httpsCallable('fetchEmails');
-        const result = await fetchEmailsFunction({ mailboxId: mailboxId });
-        
-        allEmails = result.data.emails;
-        renderEmails();
-        updateStatistics();
-        
-        alert('Emails fetched successfully!');
+        if (functions) {
+            const fetchEmailsFunction = functions.httpsCallable('fetchEmails');
+            const result = await fetchEmailsFunction({ mailboxId: mailboxId });
+            
+            allEmails = result.data.emails;
+            renderEmails();
+            updateStatistics();
+            
+            alert('Emails fetched successfully!');
+        } else {
+            // Demo mode
+            setTimeout(() => {
+                const newEmails = generateDemoEmails();
+                allEmails = [...allEmails, ...newEmails];
+                renderEmails();
+                updateStatistics();
+                alert('Demo: Emails fetched successfully!');
+                button.disabled = false;
+                svg.classList.remove('rotate');
+            }, 2000);
+            return;
+        }
     } catch (error) {
         console.error('Error fetching emails:', error);
         
+        // Fallback to demo mode
         setTimeout(() => {
             const newEmails = generateDemoEmails();
             allEmails = [...allEmails, ...newEmails];
@@ -202,6 +276,7 @@ async function fetchEmails(mailboxId) {
     }
 }
 
+// Filter Emails
 function filterEmails() {
     const searchTerm = document.getElementById('searchTerm').value.toLowerCase();
     const filterType = document.getElementById('filterType').value;
@@ -222,6 +297,7 @@ function filterEmails() {
     renderEmails(filtered);
 }
 
+// Render Emails
 function renderEmails(emails = allEmails) {
     const emailList = document.getElementById('emailList');
     const emailCount = document.getElementById('emailCount');
@@ -245,6 +321,7 @@ function renderEmails(emails = allEmails) {
     `).join('');
 }
 
+// Update Statistics
 function updateStatistics() {
     const totalEmails = allEmails.length;
     const testAfterCount = allEmails.filter(e => e.isTestAfter).length;
@@ -255,9 +332,11 @@ function updateStatistics() {
     document.getElementById('uniqueSenders').textContent = uniqueSenders;
 }
 
+// Load User Data from Firestore
 function loadUserData() {
-    if (!currentUser) return;
+    if (!currentUser || !db) return;
     
+    // Load mailboxes
     db.collection('mailboxes')
         .where('userId', '==', currentUser.uid)
         .get()
@@ -269,6 +348,7 @@ function loadUserData() {
             renderMailboxes();
         });
     
+    // Load emails
     db.collection('emails')
         .where('userId', '==', currentUser.uid)
         .orderBy('date', 'desc')
@@ -284,19 +364,40 @@ function loadUserData() {
         });
 }
 
+// Listen for Enter key on login
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, setting up event listeners...');
+    
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
+    const loginButton = document.querySelector('.btn-primary');
     
     if (usernameInput) {
         usernameInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') login();
+            if (e.key === 'Enter') {
+                console.log('Enter pressed on username');
+                login();
+            }
         });
     }
     
     if (passwordInput) {
         passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') login();
+            if (e.key === 'Enter') {
+                console.log('Enter pressed on password');
+                login();
+            }
         });
     }
+    
+    // Make sure login button works
+    if (loginButton) {
+        loginButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Login button clicked via event listener');
+            login();
+        });
+    }
+    
+    console.log('Event listeners set up successfully!');
 });
