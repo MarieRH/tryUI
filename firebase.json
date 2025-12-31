@@ -1,6 +1,15 @@
 {
   "hosting": [
     {
+      "site": "seyhdrejh",
+      "public": "seyhdrejh",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
+    },
+    {
       "site": "compaigntracker-29007",
       "public": "compaign_tracker",
       "ignore": [
