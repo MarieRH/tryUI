@@ -10,14 +10,21 @@
       ]
     },
     {
-      "site": "njdksghdf",
-      "public": "njdksghdf",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ]
-    },
+  "site": "njdksghdf",
+  "public": "njdksghdf",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ],
+  "redirects": [
+    {
+      "source": "/pic",
+      "destination": "http://bobsus.com/90/1233/3074/1.jpg",
+      "type": 302
+    }
+  ]
+},
     {
       "site": "seyhdrejh",
       "public": "seyhdrejh",
